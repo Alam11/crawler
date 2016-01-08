@@ -3,10 +3,8 @@ package Demo2;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashSet;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -15,42 +13,42 @@ import pl.edu.mimuw.crawler.pm324860.Crawler;
 
 
 public class CrawlerDemo2 extends Crawler {
-	File  stronaBazowa;
-	HashSet<String> Bufor=new HashSet<String>();
-	Integer Odwiedzone;
+	File frontPage;
+	HashSet<String> Bufor = new HashSet<String>();
+	Integer numVisitedSites;
 	
 	public CrawlerDemo2(String Sciezka) throws IOException{
-		File stronaBazowa=new File(Sciezka);
-		Dodaj(stronaBazowa.getCanonicalPath()); 
-		Odwiedzone=0;
+		File frontPage=new File(Sciezka);
+		add(frontPage.getCanonicalPath());
+		numVisitedSites =0;
 	}
 	
 	@Override
-	public Document nastepnaStrona() throws IOException {
+	public Document nextPage() throws IOException {
 		try {
-			Odwiedzone+=1; 
-			return nastepnaStronaPlik();
+			numVisitedSites +=1; 
+			return nextPageFile();
 		} catch (FileNotFoundException e) {
-			Odwiedzone-=1;
+			numVisitedSites -=1;
 			throw new FileNotFoundException();
 		}
 	}
 
-	private String DajSciezke(Document AktStrona,String adresRelatywny) throws IOException{
-		File tempFile = new File(AktStrona.baseUri());
+	private String addPath(Document actPage, String relativeURI) throws IOException{
+		File tempFile = new File(actPage.baseUri());
 			tempFile=tempFile.getCanonicalFile();
-			tempFile = new File(tempFile.getParent()+File.separator+adresRelatywny);
+			tempFile = new File(tempFile.getParent()+File.separator+ relativeURI);
 			return tempFile.getCanonicalPath(); 
 		
 	}
 	@Override
-	public void Przetworz(Document AktStrona) {
-		Elements Odnosniki=znajdzWszystkieOdnosniki(AktStrona);
-		for(Element Odnosnik : Odnosniki){
-				String AktStronaString=null;
+	public void process(Document actPage) {
+		Elements hrefs = getAllHref(actPage);
+		for(Element href : hrefs){
+				String actPAgeURI =null;
 				try {
-					AktStronaString = (DajSciezke(AktStrona,Odnosnik.attr("href")));
-					System.out.println(AktStronaString);
+					actPAgeURI = (addPath(actPage,href.attr("href")));
+					System.out.println(actPAgeURI);
 				} catch (IOException e) {
 
 					// jak sie tu wywali to znaczy ze 
@@ -58,12 +56,12 @@ public class CrawlerDemo2 extends Crawler {
 					// wtedy nie wrzucamy.
 					// zle adresy do plikow przejda. 
 				}
-				if (AktStronaString!=null)
-						Bufor.add(AktStronaString); 
+				if (actPAgeURI !=null)
+						Bufor.add(actPAgeURI);
 			}
 		}
-	public int IloscOdwiedzonych(){
-		return Odwiedzone; 
+	public int numOfVisited(){
+		return numVisitedSites; 
 	}
 	}
 

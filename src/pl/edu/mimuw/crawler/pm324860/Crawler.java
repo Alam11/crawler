@@ -1,17 +1,16 @@
 package pl.edu.mimuw.crawler.pm324860;
 /**
- * Glówna klasa abstrakcjyja biblioteki 
+ * Glï¿½wna klasa abstrakcjyja biblioteki 
  * Znajduja sie w niej wszyskie metody oraz deklaracje 
  * metod. Zawiera takze dwie zaimplementowane metody sluzace do 
  * parsowania strony na podstawie adresu. 
- * Klasa korzysta z instancji klasy Kolejka aby przechowywac
+ * Klasa korzysta z instancji klasy Queue aby przechowywac
  * adresy do odwiedzenia oraz pamietac o odwiedzonych adresach 
  * Zawiera takze funcje odnajdujaca wszsytke adresy w drzewei DOM
- * Oraz kilka przydatnych metod ktore dzialaja na klasie Kolejka. 
+ * Oraz kilka przydatnych metod ktore dzialaja na klasie Queue.
  * 
  */
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,57 +20,60 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 
 public abstract class Crawler {
-	public Kolejka Kolejka=new Kolejka();
+	public Queue Queue =new Queue();
 	
-	public abstract Document nastepnaStrona() throws IOException; 
-	public abstract void Przetworz(Document AktStrona) throws IOException;
+	public abstract Document nextPage() throws IOException;
+	public abstract void process(Document actPage) throws IOException;
 	
-	public Document nastepnaStronaInternet(){
-		Document StronaWynikowa = new Document(""); 
-		String Adres = Kolejka.pool();
+	public Document nextInternetSite(){
+		Document resultPage = new Document("");
+		String adress = Queue.pool();
 		try {
-			StronaWynikowa = Jsoup.connect(Adres).get();
+			resultPage = Jsoup.connect(adress).get();
 		} catch (java.net.SocketTimeoutException e) {
 			System.out.println("Przekroczenie czasu oczekiwania na lacze");
 		}
 		catch (org.jsoup.HttpStatusException e){
 			System.out.println("Blad 404");
 		}
+		catch (org.jsoup.UnsupportedMimeTypeException e){
+			// jak cos nie jest strona to nie ma linkow
+		}
 		catch( IOException e){
 			e.printStackTrace(); 
 		}
 		
-		return StronaWynikowa; 
+		return resultPage;
 	}
 	
-	public Document nastepnaStronaPlik() throws IOException{ 
-		String Adres = Kolejka.pool();
-		File stronaBazowa=new File(Adres);
-		return Jsoup.parse(stronaBazowa, "UTF-8" );
+	public Document nextPageFile() throws IOException{
+		String adress = Queue.pool();
+		File mainSite =new File(adress);
+		return Jsoup.parse(mainSite, "UTF-8" );
 		
 	}
 	
-	public String dajDomene(String AktStrona) throws URISyntaxException{
-		URI uri = new URI(AktStrona); 
-		String Domena =uri.getHost(); 
+	public String addDomain(String actPage) throws URISyntaxException{
+		URI uri = new URI(actPage);
+		String Domena =uri.getHost();
 		if (Domena!=null)
 			return Domena.startsWith("www.") ? Domena.substring(4) : Domena;
-		return Domena; 
+		return Domena;
 		}
 	
-	public boolean czyPusta(){
-		return Kolejka.isEmpty(); 
+	public boolean isEmpty(){
+		return Queue.isEmpty();
 	}
-	public String nstepnyAdres(){
-		return Kolejka.pool(); 
+	public String nextAderss(){
+		return Queue.pool();
 	}
 	
-	public void Dodaj(String url){
-		Kolejka.Dodaj(url);
+	public void add(String url){
+		Queue.add(url);
 		} 
 	
-	public Elements znajdzWszystkieOdnosniki(Document AktStrona){
-		return AktStrona.select("a"); 
+	public Elements getAllHref(Document actPAge){
+		return actPAge.select("a");
 	}
 
 	

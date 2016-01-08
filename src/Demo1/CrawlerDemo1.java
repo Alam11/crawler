@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,37 +13,39 @@ import org.jsoup.select.Elements;
 import pl.edu.mimuw.crawler.pm324860.Crawler;
 
 public class CrawlerDemo1 extends Crawler {
-	String DomenaZrodlowa;
-	HashMap<String,Integer> odnosnikiZPozaDomeny=new HashMap<String,Integer>();
-	public CrawlerDemo1(String Domena){
+	String baseDomain;
+	HashMap<String,Integer> hrefOutsideDomain = new HashMap<String,Integer>();
+	public CrawlerDemo1(String domain){
 		try {
-			DomenaZrodlowa=dajDomene(Domena);
+			baseDomain = addDomain(domain);
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Dodaj(Domena); // exceptions ! 
+		add(domain); // exceptions !
 	}
 	
 	
 	@Override
-	public void Przetworz(Document AktStrona) {
-		Elements Odnosniki=znajdzWszystkieOdnosniki(AktStrona);
-			for(Element Odnosnik : Odnosniki){
-				String absAktStrona=Odnosnik.absUrl("href");
+	public void process(Document actPage) {
+		Elements hrefs = getAllHref(actPage);
+			for(Element href : hrefs){
+				String absActPage = href.absUrl("href");
+
 				try {
-					String AktDomena=dajDomene(absAktStrona);
-					System.out.println(AktDomena);
-					if (!DomenaZrodlowa.equals(AktDomena)){
+					String actDomain= addDomain(absActPage);
+					System.out.println(actDomain);
+					System.out.println(absActPage);
+					if (!baseDomain.equals(actDomain)){
 						// obsluga przychodz�cych obcych domen
-						if (odnosnikiZPozaDomeny.containsKey(AktDomena)){
-							odnosnikiZPozaDomeny.put(AktDomena, odnosnikiZPozaDomeny.get(AktDomena)+1);
+						if (hrefOutsideDomain.containsKey(actDomain)){
+							hrefOutsideDomain.put(actDomain, hrefOutsideDomain.get(actDomain)+1);
 						}
 						else 
-							odnosnikiZPozaDomeny.put(AktDomena, 1);
+							hrefOutsideDomain.put(actDomain, 1);
 					}	
 					else 
-						Dodaj(absAktStrona);
+						add(absActPage);
 				} catch (URISyntaxException e) {
 					System.out.println("Niepoprawny adres Uri");
 				}
@@ -54,20 +55,20 @@ public class CrawlerDemo1 extends Crawler {
 		
 
 	@Override
-	public Document nastepnaStrona() {
-		return nastepnaStronaInternet();
+	public Document nextPage() {
+		return nextInternetSite();
 	}
-	public void wypiszDomeny(){
-		ArrayList<IloscWystapien> ListaDomen=new ArrayList<IloscWystapien>();
-		if (odnosnikiZPozaDomeny.containsKey(null)){
-			System.out.println("Niepoprawne odnosniki "+odnosnikiZPozaDomeny.get(null));
-			odnosnikiZPozaDomeny.remove(null);
+	public void printDomains(){
+		ArrayList<NumOfOccurrences> domainsList=new ArrayList<NumOfOccurrences>();
+		if (hrefOutsideDomain.containsKey(null)){
+			System.out.println("Niepoprawne odnosniki "+ hrefOutsideDomain.get(null));
+			hrefOutsideDomain.remove(null);
 		}
-		for(String s : odnosnikiZPozaDomeny.keySet()){
-			ListaDomen.add(new IloscWystapien(s, odnosnikiZPozaDomeny.get(s) ));
+		for(String s : hrefOutsideDomain.keySet()){
+			domainsList.add(new NumOfOccurrences(s, hrefOutsideDomain.get(s) ));
 		}
-		Collections.sort(ListaDomen);
-		for(IloscWystapien i : ListaDomen){
+		Collections.sort(domainsList);
+		for(NumOfOccurrences i : domainsList){
 			System.out.println(i);
 		}
 	}
