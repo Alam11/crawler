@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 
 
 public class Main {
+
 	public static void main(String[] args) {
 		CrawlerDemo2 Crawler;
 		try {
@@ -19,6 +20,7 @@ public class Main {
 					actPage = Crawler.nextPage();
 					Crawler.process(actPage);
 				} catch (FileNotFoundException fe) {
+
 					System.out.println("Blad odczytu pliku");
 				}
 			}
