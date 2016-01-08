@@ -34,8 +34,6 @@ public class CrawlerDemo1 extends Crawler {
 
 				try {
 					String actDomain= addDomain(absActPage);
-					System.out.println(actDomain);
-					System.out.println(absActPage);
 					if (!baseDomain.equals(actDomain)){
 						// obsluga przychodz�cych obcych domen
 						if (hrefOutsideDomain.containsKey(actDomain)){
